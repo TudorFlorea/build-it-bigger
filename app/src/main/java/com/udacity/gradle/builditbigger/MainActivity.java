@@ -1,28 +1,23 @@
 package com.udacity.gradle.builditbigger;
 
-import android.content.Context;
+
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
+import android.widget.Button;
+import android.widget.ProgressBar;
 
-import com.google.api.client.extensions.android.http.AndroidHttp;
-import com.google.api.client.extensions.android.json.AndroidJsonFactory;
-import com.google.api.client.googleapis.services.AbstractGoogleClientRequest;
-import com.google.api.client.googleapis.services.GoogleClientRequestInitializer;
-import com.andev.tudor.javajoker.JavaJoker;
-import com.udacity.gradle.builditbigger.backend.myApi.MyApi;
 import com.udacity.gradle.jokeviews.JokeActivity;
 
-import java.io.IOException;
 
 
 public class MainActivity extends AppCompatActivity {
+
+    private Button mJokeButton;
+    private ProgressBar mProgressBar;
 
     private final String JOKE_TAG = "joke";
 
@@ -32,12 +27,41 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        new EndpointAsyncTask(){
+
+        mJokeButton = findViewById(R.id.tell_joke_btn);
+        mProgressBar = findViewById(R.id.progress_bar);
+        mProgressBar.setVisibility(View.GONE);
+
+        mJokeButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            protected void onPostExecute(String s) {
-                Toast.makeText(MainActivity.this, s, Toast.LENGTH_SHORT).show();
+            public void onClick(View view) {
+                    new EndpointAsyncTask(){
+
+                        @Override
+                        protected void onPreExecute() {
+                            super.onPreExecute();
+                            mProgressBar.setVisibility(View.VISIBLE);
+                            mJokeButton.setVisibility(View.GONE);
+                        }
+
+                        @Override
+                        protected void onPostExecute(String s) {
+                            //Toast.makeText(MainActivity.this, s, Toast.LENGTH_SHORT).show();
+
+                            Intent i = new Intent(MainActivity.this, JokeActivity.class);
+                            i.putExtra(JOKE_TAG, s);
+
+                            startActivity(i);
+
+                            mProgressBar.setVisibility(View.GONE);
+                            mJokeButton.setVisibility(View.VISIBLE);
+
+                        }
+                    }.execute(MainActivity.this);
             }
-        }.execute(MainActivity.this);
+        });
+
+
 
     }
 
@@ -63,67 +87,6 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
-
-    public void tellJoke(View view) {
-        JavaJoker javaJoker = new JavaJoker();
-
-        Intent i = new Intent(this, JokeActivity.class);
-        i.putExtra(JOKE_TAG, javaJoker.getJoke());
-
-        startActivity(i);
-
-        //Toast.makeText(this, javaJoker.getJoke(), Toast.LENGTH_SHORT).show();
-    }
-
-//    class EndpointAsyncTask extends AsyncTask<Context, Void, String> {
-//
-//        MyApi myApi = null;
-//
-//        private Context mContext;
-//
-//        public EndpointAsyncTask() {
-//            //mContext= context;
-//        }
-//
-//        @Override
-//        protected void onPreExecute() {
-//            super.onPreExecute();
-//
-//        }
-//
-//        @Override
-//        protected String doInBackground(Context... params) {
-//
-//            if (myApi == null) {
-//                MyApi.Builder builder = new MyApi.Builder(AndroidHttp.newCompatibleTransport(),
-//                        new AndroidJsonFactory(), null)
-//                        .setRootUrl("https://joke-teller-209814.appspot.com/_ah/api/")
-//                        .setGoogleClientRequestInitializer(new GoogleClientRequestInitializer() {
-//                            @Override
-//                            public void initialize(AbstractGoogleClientRequest<?> request) throws IOException {
-//                                request.setDisableGZipContent(true);
-//                            }
-//                        })
-//                        ;
-//                myApi = builder.build();
-//            }
-//
-//            mContext = params[0];
-//
-//            try {
-//                return myApi.sayHi().execute().getData();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//                return e.getMessage();
-//            }
-//
-//        }
-//
-//        @Override
-//        protected void onPostExecute(String s) {
-//            Toast.makeText(mContext, s, Toast.LENGTH_LONG).show();
-//        }
-//    }
 
 
 }
