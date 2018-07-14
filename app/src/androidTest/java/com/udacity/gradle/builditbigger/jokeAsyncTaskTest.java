@@ -26,7 +26,7 @@ public class jokeAsyncTaskTest {
 
         try {
             task.execute(context);
-            result = task.get(15, TimeUnit.SECONDS);
+            result = task.get(10, TimeUnit.SECONDS);
             assertNotNull(result);
         } catch (Exception e) {
             fail("Timed out!");
